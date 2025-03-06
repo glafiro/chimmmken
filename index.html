@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <title>Square Cycle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            position: relative;
+            transition: background-color 0.5s;
+            overflow: hidden;  
+            font-family: "Comic Neue", cursive;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        #text {
+            position: absolute;
+            top: 20vh;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .square {
+            width: 60vw;
+            height: 60vw;
+            max-width: 70vh;
+            max-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s;
+        }
+
+        .small-square {
+            width: 30vw;
+            height: 30vw;
+            max-width: 30vh;
+            max-height: 30vh;
+            position: absolute;
+            display: none;
+            cursor: grab;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes wiggle {
+            from {
+                transform: rotate(-5deg);
+            }
+            to {
+                transform: rotate(5deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="text">HAPPY BIRTHDAY!!! CLICK ON ME TO DISCOVER YOUR PRESENT</div>
+    <img class="square" id="bigSquare" src="rosie1.png">
+    <img class="small-square" id="smallSquare">
+
+    <script>
+        const foods = ["bacon", "hotdog", "fries", "chicken", "burger", "bacon"];
+        const paths = [
+            "rosie2.png",
+            "rosie3.png",
+            "rosie4.png",
+            "rosie5.png",
+            "rosie6.png",
+            "rosie2.png"
+        ];
+        const backgrounds = ["#ffeb3b", "#e91e63", "#03a9f4", "#4caf50", "#ff9800", "#673ab7"];
+        const messages = [
+            "Well actually can I have a hot dog first?",
+            "Really, that's it???",
+            "MOM, I'M STARVING!!!",
+            "BURGER BUERGER BUUEGRE BURGERZ BURGER",
+            "Ok maybe one last snack :)",
+        ];
+        const animations = ["pulse", "wiggle", "pulse", "wiggle", "pulse"];
+        const spawnPositions = [
+            { top: "5vh", left: "5vw" },
+            { top: "10vh", left: "15vw" },
+            { top: "15vh", left: "25vw" },
+            { top: "20vh", left: "35vw" },
+            { top: "10vh", left: "5vw" }
+        ];
+        let cycle = 0;
+
+        function spawnSmallSquare() {
+            if (cycle >= foods.length) return;
+            let smallSquare = document.getElementById("smallSquare");
+            let bigSquare = document.getElementById("bigSquare");
+            let text = document.getElementById("text");
+            
+            bigSquare.src = paths[cycle];
+            text.innerText = messages[cycle];
+            smallSquare.style.display = "block";
+            smallSquare.src = foods[cycle + 1] + ".png";
+            document.body.style.backgroundColor = backgrounds[cycle];
+            smallSquare.style.animation = `${animations[cycle]} 0.6s infinite alternate`;
+            
+            smallSquare.style.top = spawnPositions[cycle].top;
+            smallSquare.style.left = spawnPositions[cycle].left;
+        }
+
+        document.getElementById("bigSquare").addEventListener("click", spawnSmallSquare);
+
+        let smallSquare = document.getElementById("smallSquare");
+        let isDragging = false;
+
+        smallSquare.addEventListener("mousedown", startDrag);
+        smallSquare.addEventListener("touchstart", startDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            document.addEventListener("mousemove", drag);
+            document.addEventListener("mouseup", drop);
+            document.addEventListener("touchmove", drag);
+            document.addEventListener("touchend", drop);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            let x = e.clientX || e.touches[0].clientX;
+            let y = e.clientY || e.touches[0].clientY;
+            smallSquare.style.left = `${x - smallSquare.clientWidth / 2}px`;
+            smallSquare.style.top = `${y - smallSquare.clientHeight / 2}px`;
+        }
+
+        function drop(e) {
+            isDragging = false;
+            document.removeEventListener("mousemove", drag);
+            document.removeEventListener("mouseup", drop);
+            document.removeEventListener("touchmove", drag);
+            document.removeEventListener("touchend", drop);
+            
+            let bigSquare = document.getElementById("bigSquare").getBoundingClientRect();
+            let smallRect = smallSquare.getBoundingClientRect();
+
+            if (
+                smallRect.left > bigSquare.left &&
+                smallRect.right < bigSquare.right &&
+                smallRect.top > bigSquare.top &&
+                smallRect.bottom < bigSquare.bottom
+            ) {
+                cycle++;
+                if (cycle < 5) {
+                    smallSquare.style.display = "none";
+                    spawnSmallSquare();
+                } else {
+                    document.getElementById("bigSquare").src = "rosie2.png";
+                    smallSquare.style.display = "none";
+                    document.getElementById("text").innerText = "WE ARE GOING TO THE MOUNTAINS!!!!";
+                    document.getElementById("text").style.color = "white";
+                    document.body.style.backgroundImage = "url('fanano.png')";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
